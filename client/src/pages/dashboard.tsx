@@ -155,7 +155,7 @@ export default function Dashboard() {
                 <span className="text-xs">{t('dashboard.action.newAppointment')}</span>
               </Button>
             </Link>
-            <Link href="/notes">
+            <Link href="/medical-scribe">
               <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
                 <FileText className="h-5 w-5" />
                 <span className="text-xs">{t('dashboard.action.medicalNotes')}</span>

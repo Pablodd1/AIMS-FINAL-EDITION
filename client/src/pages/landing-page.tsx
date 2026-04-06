@@ -47,9 +47,16 @@ const FeatureBox = ({
         {description}
       </p>
       <div className="mt-auto">
-        <Button className="w-full" variant="outline">
-          Try Now
-        </Button>
+        <Link href={title === "AIMS Scheduler" ? "/appointments" : 
+                    title === "AIM Scribe" ? "/medical-scribe" : 
+                    title === "AIMS Intake Forms" ? "/patient-intake" : 
+                    title === "AIMS Insight" ? "/notes" : 
+                    title === "AIMS Chatbot" ? "/assistant" : 
+                    title === "Advanced Medical Billing" ? "/billing" : "/dashboard"}>
+          <Button className="w-full" variant="outline">
+            Try Now
+          </Button>
+        </Link>
       </div>
       <div className="flex justify-center mt-4 space-x-2">
         <span className="h-2 w-2 rounded-full bg-red-500"></span>

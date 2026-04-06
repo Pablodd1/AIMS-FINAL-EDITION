@@ -86,6 +86,17 @@ const NOTE_TYPES = [
   { id: "discharge", name: "Discharge Summary", icon: "📝", description: "Hospital/care discharge", specialty: "Hospital" },
 ];
 
+declare global {
+  interface Window {
+    startRecording?: () => void;
+    saveNotes?: () => void;
+    previewNotes?: () => void;
+    downloadNotes?: () => void;
+    downloadPdfNotes?: () => void;
+    clearForm?: () => void;
+  }
+}
+
 export default function Notes() {
   const { t, language } = useLanguage();
   // Workflow state: 1=Select Patient, 2=Review Summary, 3=Consultation, 4=Review & Sign
@@ -393,7 +404,7 @@ export default function Notes() {
       window.downloadNotes = undefined;
       window.clearForm = undefined;
     };
-  }, [handleSaveNote, handleDownloadNote, resetWorkflow]);
+  }, [handleSaveNote, resetWorkflow]);
 
   // Update prompt states when customPrompt is loaded
   useEffect(() => {

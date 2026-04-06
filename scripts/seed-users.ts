@@ -1,12 +1,14 @@
 import 'dotenv/config';
 import { db } from '../server/db';
-import { users } from '../shared/schema';
+import { users, patients, appointments } from '../shared/schema';
 import { eq } from 'drizzle-orm';
 import { hashPassword } from '../server/auth';
+import { addDays, subDays, setHours, setMinutes } from 'date-fns';
 
 async function seedUsers() {
-  console.log('Seeding default users...');
+  console.log('Seeding initial clinical data...');
 
+  // 1. Seed Users
   const defaultUsers = [
     {
       username: 'admin',
@@ -45,9 +47,9 @@ async function seedUsers() {
     },
   ];
 
+  let adminId = 1;
   for (const user of defaultUsers) {
     try {
-      // Check if user already exists
       const existing = await db
         .select()
         .from(users)
@@ -56,31 +58,142 @@ async function seedUsers() {
 
       if (existing.length === 0) {
         const hashedPassword = await hashPassword(user.password);
-        await db.insert(users).values({
+        const [newUser] = await db.insert(users).values({
           ...user,
           password: hashedPassword,
           createdAt: new Date(),
-        });
+        }).returning();
+        if (user.username === 'admin') adminId = newUser.id;
         console.log(`✓ Created user: ${user.username} (${user.role})`);
       } else {
+        if (user.username === 'admin') adminId = existing[0].id;
         console.log(`- User already exists: ${user.username}`);
       }
     } catch (error: any) {
-      if (error.code === '23505') {
-        console.log(`- User already exists: ${user.username}`);
+      console.error(`✗ Error creating user ${user.username}:`, error.message);
+    }
+  }
+
+  // 2. Seed Patients
+  console.log('\nSeeding patients...');
+  const demoPatients = [
+    {
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john.doe@email.com',
+      phone: '555-0101',
+      dateOfBirth: '1985-05-15',
+      gender: 'male',
+      address: '123 Medical Way, Health City',
+      medicalHistory: 'Hypertension, Type 2 Diabetes',
+    },
+    {
+      firstName: 'Jane',
+      lastName: 'Smith',
+      email: 'jane.smith@email.com',
+      phone: '555-0102',
+      dateOfBirth: '1992-08-22',
+      gender: 'female',
+      address: '456 Wellness Ave, Care Town',
+      medicalHistory: 'Asthma, Seasonal Allergies',
+    },
+    {
+      firstName: 'Robert',
+      lastName: 'Brown',
+      email: 'robert.b@email.com',
+      phone: '555-0103',
+      dateOfBirth: '1970-11-30',
+      gender: 'male',
+      address: '789 Recovery St, Medic Village',
+      medicalHistory: 'Hyperlipidemia, Chronic Back Pain',
+    },
+  ];
+
+  const seededPatients = [];
+  for (const patient of demoPatients) {
+    try {
+      const existing = await db
+        .select()
+        .from(patients)
+        .where(eq(patients.email, patient.email))
+        .limit(1);
+
+      if (existing.length === 0) {
+        const [newPatient] = await db.insert(patients).values({
+          ...patient,
+          createdAt: new Date(),
+          createdBy: adminId,
+        }).returning();
+        seededPatients.push(newPatient);
+        console.log(`✓ Created patient: ${patient.firstName} ${patient.lastName}`);
       } else {
-        console.error(`✗ Error creating user ${user.username}:`, error.message);
+        seededPatients.push(existing[0]);
+        console.log(`- Patient already exists: ${patient.firstName} ${patient.lastName}`);
+      }
+    } catch (error: any) {
+      console.error(`✗ Error creating patient:`, error.message);
+    }
+  }
+
+  // 3. Seed Appointments
+  console.log('\nSeeding appointments...');
+  const drSmith = await db.select().from(users).where(eq(users.username, 'provider')).limit(1);
+  
+  if (drSmith.length > 0 && seededPatients.length > 0) {
+    const today = new Date();
+    const demoAppointments = [
+      {
+        patientId: seededPatients[0].id,
+        doctorId: drSmith[0].id,
+        date: setMinutes(setHours(today, 9), 0),
+        duration: 30,
+        type: 'initial',
+        status: 'completed',
+        reason: 'Initial consultation for hypertension management',
+      },
+      {
+        patientId: seededPatients[1].id,
+        doctorId: drSmith[0].id,
+        date: setMinutes(setHours(today, 10), 30),
+        duration: 20,
+        type: 'followup',
+        status: 'scheduled',
+        reason: 'Routine asthma follow-up',
+      },
+      {
+        patientId: seededPatients[2].id,
+        doctorId: drSmith[0].id,
+        date: setMinutes(setHours(today, 14), 0),
+        duration: 45,
+        type: 'physical',
+        status: 'scheduled',
+        reason: 'Annual wellness exam',
+      },
+      {
+        patientId: seededPatients[0].id,
+        doctorId: drSmith[0].id,
+        date: setMinutes(setHours(addDays(today, 1), 11), 0),
+        duration: 15,
+        type: 'reevaluation',
+        status: 'scheduled',
+        reason: 'Blood pressure check',
+      },
+    ];
+
+    for (const appt of demoAppointments) {
+      try {
+        await db.insert(appointments).values({
+          ...appt,
+          createdAt: new Date(),
+        });
+        console.log(`✓ Created appointment: ${appt.reason}`);
+      } catch (error: any) {
+        console.error(`✗ Error creating appointment:`, error.message);
       }
     }
   }
 
-  console.log('\nSeed complete!');
-  console.log('\n=== Default Login Credentials ===');
-  console.log('Admin:    admin / admin123');
-  console.log('Provider: provider / provider123');
-  console.log('Doctor:   doctor / doctor123');
-  console.log('================================\n');
-
+  console.log('\nClinical seed complete!');
   process.exit(0);
 }
 
