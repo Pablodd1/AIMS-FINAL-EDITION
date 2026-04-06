@@ -1,0 +1,80 @@
+modules = ["nodejs-20", "web", "postgresql-16", "python-3.11"]
+run = "npm run dev"
+hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "imagemagick", "jq", "lcms2", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "pkg-config", "psmisc", "qhull", "tcl", "tk", "zlib"]
+
+[deployment]
+deploymentTarget = "cloudrun"
+build = ["npm", "run", "build"]
+run = ["npm", "run", "start"]
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 34491
+externalPort = 5000
+
+[[ports]]
+localPort = 35111
+externalPort = 5173
+
+[[ports]]
+localPort = 35263
+externalPort = 3002
+
+[[ports]]
+localPort = 36643
+externalPort = 4200
+
+[[ports]]
+localPort = 40997
+externalPort = 3001
+
+[[ports]]
+localPort = 43301
+externalPort = 3000
+
+[[ports]]
+localPort = 44347
+externalPort = 3003
+
+[workflows]
+runButton = "Start Dev Server"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Start Dev Server"
+author = 40299023
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"

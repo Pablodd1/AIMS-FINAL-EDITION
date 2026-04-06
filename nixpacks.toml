@@ -1,0 +1,19 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "python3"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = [
+  "npm run build",
+  "npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist --sourcemap || echo 'Server build warning'",
+  "(python3 -m pip install -r python_services/requirements.txt 2>/dev/null || echo 'Python optional')"
+]
+
+[start]
+cmd = "node dist/index.js"
+
+[variables]
+NODE_ENV = "production"
+PORT = "3000"

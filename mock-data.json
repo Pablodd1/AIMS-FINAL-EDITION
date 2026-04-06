@@ -1,0 +1,1357 @@
+{
+  "users": [
+    [
+      1,
+      {
+        "username": "admin",
+        "password": "7765d034b6e047cb28c78951e4c04c794ec1781713a9bddb6b1fbb2a3fba3e8fb407075297a194ab8cadc5ee6a336bfaa4a95e31661f4d81534c3b1ef468a6ca.031b5a2f420b44c810123e1372db98a5",
+        "name": "System Administrator",
+        "role": "administrator",
+        "email": "admin@aims.medical",
+        "isActive": true,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false,
+        "id": 1,
+        "createdAt": "2026-01-18T15:58:20.790Z",
+        "lastLogin": "2026-02-07T14:45:35.365Z"
+      }
+    ],
+    [
+      2,
+      {
+        "username": "testuser",
+        "password": "hashedpassword",
+        "name": "Test User",
+        "email": "test@example.com",
+        "role": "doctor",
+        "isActive": true,
+        "id": 2,
+        "createdAt": "2026-01-18T15:58:20.791Z",
+        "lastLogin": "2026-01-18T16:22:14.050Z",
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      3,
+      {
+        "username": "doc",
+        "password": "pw",
+        "name": "Dr. Test",
+        "email": "doc@test.com",
+        "role": "doctor",
+        "id": 3,
+        "createdAt": "2026-01-18T15:58:20.795Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "isActive": true,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      5,
+      {
+        "username": "testuser",
+        "password": "hashedpassword",
+        "name": "Test User",
+        "email": "test@example.com",
+        "role": "doctor",
+        "isActive": true,
+        "id": 5,
+        "createdAt": "2026-01-18T15:59:39.663Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      6,
+      {
+        "username": "doc",
+        "password": "pw",
+        "name": "Dr. Test",
+        "email": "doc@test.com",
+        "role": "doctor",
+        "id": 6,
+        "createdAt": "2026-01-18T15:59:39.666Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "isActive": true,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      8,
+      {
+        "username": "provider",
+        "password": "ef4f3b72c839b19706afcf3d40c4ac36c05d78dfdc252ba98de2507cff78dd471a3c9a931e798f2cbf00c1858d9aecdfac9af3fc9d4fab0d9d1a898506055d01.c681f50dea50b6880ab610b9c30fa23b",
+        "name": "Dr. John Smith",
+        "role": "doctor",
+        "email": "provider@aims.medical",
+        "specialty": "Internal Medicine",
+        "licenseNumber": "MD-12345",
+        "isActive": true,
+        "id": 8,
+        "createdAt": "2026-01-18T16:10:16.298Z",
+        "lastLogin": null,
+        "phone": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      9,
+      {
+        "username": "provider",
+        "password": "beadc1f936eae50ffa9f040d54ecf1b1bd94093fd696b1f0573e895f1a6dd9ac75916db7f87f7ded56fd0f10143bc47349a13d561fe718411d7391677092f354.d38c1298076445a193d8817dc6a69345",
+        "name": "Dr. John Smith",
+        "role": "doctor",
+        "email": "provider@aims.medical",
+        "specialty": "Internal Medicine",
+        "licenseNumber": "MD-12345",
+        "isActive": true,
+        "id": 9,
+        "createdAt": "2026-01-18T16:10:16.379Z",
+        "lastLogin": null,
+        "phone": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      10,
+      {
+        "username": "doctor",
+        "password": "ae40be7cc529ed6c813856fd9a204c3747c1bfff546c206b170e28f48190cc6a6141854ac6c47e87266f570dbc72e7b83f2289a2b67f69a502a0258e7977b74d.c2d768bce5955d24fb2cb3471a0825c6",
+        "name": "Dr. Sarah Johnson",
+        "role": "doctor",
+        "email": "doctor@aims.medical",
+        "specialty": "Family Medicine",
+        "licenseNumber": "MD-67890",
+        "isActive": true,
+        "id": 10,
+        "createdAt": "2026-01-18T16:10:16.379Z",
+        "lastLogin": null,
+        "phone": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      11,
+      {
+        "username": "doctor",
+        "password": "95e3b90535f329f25b4921980b8d15c674d18b074c0e666f737396551aa5a64d01d70cd2e039fcc1e560e12c2ed50465c736edeffb861211a0789ee467928449.f4018b6055f1d08b10c85f645c9a1fea",
+        "name": "Dr. Sarah Johnson",
+        "role": "doctor",
+        "email": "doctor@aims.medical",
+        "specialty": "Family Medicine",
+        "licenseNumber": "MD-67890",
+        "isActive": true,
+        "id": 11,
+        "createdAt": "2026-01-18T16:10:16.496Z",
+        "lastLogin": null,
+        "phone": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      22,
+      {
+        "username": "doc1",
+        "password": "pw",
+        "name": "Doctor 1",
+        "email": "doc1@test.com",
+        "role": "doctor",
+        "clinicLocation": "North",
+        "id": 22,
+        "createdAt": "2026-01-20T00:09:56.610Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "isActive": true,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      23,
+      {
+        "username": "doc2",
+        "password": "pw",
+        "name": "Doctor 2",
+        "email": "doc2@test.com",
+        "role": "doctor",
+        "clinicLocation": "South",
+        "id": 23,
+        "createdAt": "2026-01-20T00:09:56.612Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "isActive": true,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      27,
+      {
+        "username": "testuser",
+        "password": "hashedpassword",
+        "name": "Test User",
+        "email": "test@example.com",
+        "role": "doctor",
+        "isActive": true,
+        "id": 27,
+        "createdAt": "2026-02-02T15:26:55.496Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      28,
+      {
+        "username": "doc",
+        "password": "pw",
+        "name": "Dr. Test",
+        "email": "doc@test.com",
+        "role": "doctor",
+        "id": 28,
+        "createdAt": "2026-02-02T15:26:55.501Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "isActive": true,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      30,
+      {
+        "username": "testuser",
+        "password": "hashedpassword",
+        "name": "Test User",
+        "email": "test@example.com",
+        "role": "doctor",
+        "isActive": true,
+        "id": 30,
+        "createdAt": "2026-02-02T15:27:20.365Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      31,
+      {
+        "username": "doc",
+        "password": "pw",
+        "name": "Dr. Test",
+        "email": "doc@test.com",
+        "role": "doctor",
+        "id": 31,
+        "createdAt": "2026-02-02T15:27:20.368Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "isActive": true,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      33,
+      {
+        "username": "testuser",
+        "password": "hashedpassword",
+        "name": "Test User",
+        "email": "test@example.com",
+        "role": "doctor",
+        "isActive": true,
+        "id": 33,
+        "createdAt": "2026-02-02T15:27:47.120Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      34,
+      {
+        "username": "doc",
+        "password": "pw",
+        "name": "Dr. Test",
+        "email": "doc@test.com",
+        "role": "doctor",
+        "id": 34,
+        "createdAt": "2026-02-02T15:27:47.123Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "isActive": true,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      36,
+      {
+        "username": "testuser",
+        "password": "hashedpassword",
+        "name": "Test User",
+        "email": "test@example.com",
+        "role": "doctor",
+        "isActive": true,
+        "id": 36,
+        "createdAt": "2026-02-06T19:43:37.394Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      37,
+      {
+        "username": "doc",
+        "password": "pw",
+        "name": "Dr. Test",
+        "email": "doc@test.com",
+        "role": "doctor",
+        "id": 37,
+        "createdAt": "2026-02-06T19:43:37.397Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "isActive": true,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      39,
+      {
+        "username": "testuser",
+        "password": "hashedpassword",
+        "name": "Test User",
+        "email": "test@example.com",
+        "role": "doctor",
+        "isActive": true,
+        "id": 39,
+        "createdAt": "2026-02-06T23:39:12.886Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      40,
+      {
+        "username": "doc",
+        "password": "pw",
+        "name": "Dr. Test",
+        "email": "doc@test.com",
+        "role": "doctor",
+        "id": 40,
+        "createdAt": "2026-02-06T23:39:12.896Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "isActive": true,
+        "openaiApiKey": null,
+        "useOwnApiKey": false
+      }
+    ],
+    [
+      59,
+      {
+        "username": "testuser",
+        "password": "hashedpassword",
+        "name": "Test User",
+        "email": "test@example.com",
+        "role": "doctor",
+        "isActive": true,
+        "id": 59,
+        "createdAt": "2026-02-07T02:12:50.597Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false,
+        "clinicLocation": null
+      }
+    ],
+    [
+      60,
+      {
+        "username": "doc",
+        "password": "pw",
+        "name": "Dr. Test",
+        "email": "doc@test.com",
+        "role": "doctor",
+        "id": 60,
+        "createdAt": "2026-02-07T02:12:50.600Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "isActive": true,
+        "openaiApiKey": null,
+        "useOwnApiKey": false,
+        "clinicLocation": null
+      }
+    ],
+    [
+      62,
+      {
+        "username": "testuser",
+        "password": "hashedpassword",
+        "name": "Test User",
+        "email": "test@example.com",
+        "role": "doctor",
+        "isActive": true,
+        "id": 62,
+        "createdAt": "2026-02-07T14:32:07.056Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "openaiApiKey": null,
+        "useOwnApiKey": false,
+        "clinicLocation": null
+      }
+    ],
+    [
+      63,
+      {
+        "username": "doc",
+        "password": "pw",
+        "name": "Dr. Test",
+        "email": "doc@test.com",
+        "role": "doctor",
+        "id": 63,
+        "createdAt": "2026-02-07T14:32:07.061Z",
+        "lastLogin": null,
+        "phone": null,
+        "specialty": null,
+        "licenseNumber": null,
+        "avatar": null,
+        "bio": null,
+        "isActive": true,
+        "openaiApiKey": null,
+        "useOwnApiKey": false,
+        "clinicLocation": null
+      }
+    ]
+  ],
+  "patients": [
+    [
+      4,
+      {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane@example.com",
+        "createdBy": 3,
+        "id": 4,
+        "phone": null,
+        "dateOfBirth": null,
+        "address": null,
+        "medicalHistory": null
+      }
+    ],
+    [
+      7,
+      {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane@example.com",
+        "createdBy": 6,
+        "id": 7,
+        "phone": null,
+        "dateOfBirth": null,
+        "address": null,
+        "medicalHistory": null
+      }
+    ],
+    [
+      13,
+      {
+        "firstName": "John",
+        "lastName": "Doe_Test",
+        "email": "john.doe.1768752943102@example.com",
+        "phone": "555-0123",
+        "dateOfBirth": "",
+        "address": "",
+        "medicalHistory": "",
+        "createdBy": 2,
+        "id": 13
+      }
+    ],
+    [
+      15,
+      {
+        "firstName": "John",
+        "lastName": "Doe_Test",
+        "email": "john.doe.1768753056566@example.com",
+        "phone": "555-0123",
+        "dateOfBirth": "",
+        "address": "",
+        "medicalHistory": "",
+        "createdBy": 2,
+        "id": 15
+      }
+    ],
+    [
+      17,
+      {
+        "firstName": "John",
+        "lastName": "Doe_Test",
+        "email": "john.doe.1768753145300@example.com",
+        "phone": "555-0123",
+        "dateOfBirth": "",
+        "address": "",
+        "medicalHistory": "",
+        "createdBy": 2,
+        "id": 17
+      }
+    ],
+    [
+      19,
+      {
+        "firstName": "John",
+        "lastName": "Doe_Test",
+        "email": "john.doe.1768753234907@example.com",
+        "phone": "555-0123",
+        "dateOfBirth": "",
+        "address": "",
+        "medicalHistory": "",
+        "createdBy": 2,
+        "id": 19
+      }
+    ],
+    [
+      21,
+      {
+        "firstName": "John",
+        "lastName": "Doe_Test",
+        "email": "john.doe.1768753334866@example.com",
+        "phone": "555-0123",
+        "dateOfBirth": "",
+        "address": "",
+        "medicalHistory": "",
+        "createdBy": 2,
+        "id": 21
+      }
+    ],
+    [
+      24,
+      {
+        "firstName": "Test",
+        "email": "test@test.com",
+        "createdBy": 22,
+        "id": 24,
+        "lastName": null,
+        "phone": null,
+        "dateOfBirth": null,
+        "address": null,
+        "medicalHistory": null
+      }
+    ],
+    [
+      29,
+      {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane@example.com",
+        "createdBy": 28,
+        "id": 29,
+        "phone": null,
+        "dateOfBirth": null,
+        "address": null,
+        "medicalHistory": null
+      }
+    ],
+    [
+      32,
+      {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane@example.com",
+        "createdBy": 31,
+        "id": 32,
+        "phone": null,
+        "dateOfBirth": null,
+        "address": null,
+        "medicalHistory": null
+      }
+    ],
+    [
+      35,
+      {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane@example.com",
+        "createdBy": 34,
+        "id": 35,
+        "phone": null,
+        "dateOfBirth": null,
+        "address": null,
+        "medicalHistory": null
+      }
+    ],
+    [
+      38,
+      {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane@example.com",
+        "createdBy": 37,
+        "id": 38,
+        "phone": null,
+        "dateOfBirth": null,
+        "address": null,
+        "medicalHistory": null
+      }
+    ],
+    [
+      41,
+      {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane@example.com",
+        "createdBy": 40,
+        "id": 41,
+        "phone": null,
+        "dateOfBirth": null,
+        "address": null,
+        "medicalHistory": null
+      }
+    ],
+    [
+      42,
+      {
+        "firstName": "Carlos",
+        "lastName": "Rodriguez",
+        "email": "carlos.rod@example.com",
+        "phone": "555-010-2020",
+        "dateOfBirth": "1975-05-12",
+        "address": "Calle 10, Caracas, Venezuela",
+        "medicalHistory": "History of Type 2 Diabetes and Hypertension.",
+        "createdBy": 1,
+        "id": 42
+      }
+    ],
+    [
+      50,
+      {
+        "firstName": "Maria",
+        "lastName": "Garcia",
+        "email": "maria.garcia@example.com",
+        "phone": "555-010-3030",
+        "dateOfBirth": "1988-11-22",
+        "address": "Av. Bolivar, Valencia, Venezuela",
+        "medicalHistory": "Asthma since childhood. Recent appendectomy.",
+        "createdBy": 1,
+        "id": 50
+      }
+    ],
+    [
+      55,
+      {
+        "firstName": "Juan",
+        "lastName": "Perez",
+        "email": "juan.perez@example.com",
+        "phone": "555-010-4040",
+        "dateOfBirth": "1962-03-15",
+        "address": "Sector 5, Maracaibo, Venezuela",
+        "medicalHistory": "Chronic lower back pain. Penicillin allergy.",
+        "createdBy": 1,
+        "id": 55
+      }
+    ],
+    [
+      61,
+      {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane@example.com",
+        "createdBy": 60,
+        "id": 61,
+        "phone": null,
+        "dateOfBirth": null,
+        "address": null,
+        "medicalHistory": null
+      }
+    ],
+    [
+      64,
+      {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane@example.com",
+        "createdBy": 63,
+        "id": 64,
+        "phone": null,
+        "dateOfBirth": null,
+        "address": null,
+        "medicalHistory": null
+      }
+    ]
+  ],
+  "appointments": [
+    [
+      25,
+      {
+        "patientId": 24,
+        "doctorId": 22,
+        "date": "2026-01-20T00:09:56.613Z",
+        "status": "scheduled",
+        "id": 25,
+        "notes": null,
+        "confirmationToken": null,
+        "patientConfirmationStatus": "pending_confirmation",
+        "type": "in-person",
+        "reason": null
+      }
+    ],
+    [
+      26,
+      {
+        "patientId": 24,
+        "doctorId": 23,
+        "date": "2026-01-20T00:09:56.613Z",
+        "status": "scheduled",
+        "id": 26,
+        "notes": null,
+        "confirmationToken": null,
+        "patientConfirmationStatus": "pending_confirmation",
+        "type": "in-person",
+        "reason": null
+      }
+    ],
+    [
+      49,
+      {
+        "patientId": 42,
+        "doctorId": 1,
+        "date": "2026-02-14T01:59:37.677Z",
+        "status": "scheduled",
+        "type": "in-person",
+        "reason": "Regular checkup",
+        "notes": "",
+        "id": 49,
+        "confirmationToken": null,
+        "patientConfirmationStatus": "pending_confirmation"
+      }
+    ],
+    [
+      54,
+      {
+        "patientId": 50,
+        "doctorId": 1,
+        "date": "2026-02-14T01:59:37.680Z",
+        "status": "scheduled",
+        "type": "in-person",
+        "reason": "Regular checkup",
+        "notes": "",
+        "id": 54,
+        "confirmationToken": null,
+        "patientConfirmationStatus": "pending_confirmation"
+      }
+    ],
+    [
+      58,
+      {
+        "patientId": 55,
+        "doctorId": 1,
+        "date": "2026-02-14T01:59:37.682Z",
+        "status": "scheduled",
+        "type": "in-person",
+        "reason": "Regular checkup",
+        "notes": "",
+        "id": 58,
+        "confirmationToken": null,
+        "patientConfirmationStatus": "pending_confirmation"
+      }
+    ],
+    [
+      71,
+      {
+        "patientId": 42,
+        "doctorId": 1,
+        "date": "2026-02-14T14:33:36.526Z",
+        "status": "scheduled",
+        "type": "in-person",
+        "reason": "Regular checkup",
+        "notes": "",
+        "id": 71,
+        "confirmationToken": null,
+        "patientConfirmationStatus": "pending_confirmation"
+      }
+    ],
+    [
+      75,
+      {
+        "patientId": 50,
+        "doctorId": 1,
+        "date": "2026-02-14T14:33:36.528Z",
+        "status": "scheduled",
+        "type": "in-person",
+        "reason": "Regular checkup",
+        "notes": "",
+        "id": 75,
+        "confirmationToken": null,
+        "patientConfirmationStatus": "pending_confirmation"
+      }
+    ],
+    [
+      78,
+      {
+        "patientId": 55,
+        "doctorId": 1,
+        "date": "2026-02-14T14:33:36.530Z",
+        "status": "scheduled",
+        "type": "in-person",
+        "reason": "Regular checkup",
+        "notes": "",
+        "id": 78,
+        "confirmationToken": null,
+        "patientConfirmationStatus": "pending_confirmation"
+      }
+    ]
+  ],
+  "settings": [],
+  "systemSettings": [],
+  "customNotePrompts": [],
+  "medicalNotes": [
+    [
+      12,
+      {
+        "id": 12,
+        "patientId": null,
+        "consultationId": null,
+        "doctorId": 2,
+        "content": "This is a test note content.",
+        "type": "soap",
+        "title": "Test Note 1768752936663",
+        "isQuickNote": true,
+        "template": null,
+        "signature": null,
+        "createdAt": "2026-01-18T16:15:37.064Z"
+      }
+    ],
+    [
+      14,
+      {
+        "id": 14,
+        "patientId": null,
+        "consultationId": null,
+        "doctorId": 2,
+        "content": "This is a test note content.",
+        "type": "soap",
+        "title": "Test Note 1768753054236",
+        "isQuickNote": true,
+        "template": null,
+        "signature": null,
+        "createdAt": "2026-01-18T16:17:34.738Z"
+      }
+    ],
+    [
+      16,
+      {
+        "id": 16,
+        "patientId": null,
+        "consultationId": null,
+        "doctorId": 2,
+        "content": "This is a test note content.",
+        "type": "soap",
+        "title": "Test Note 1768753140455",
+        "isQuickNote": true,
+        "template": null,
+        "signature": null,
+        "createdAt": "2026-01-18T16:19:00.846Z"
+      }
+    ],
+    [
+      18,
+      {
+        "id": 18,
+        "patientId": null,
+        "consultationId": null,
+        "doctorId": 2,
+        "content": "This is a test note content.",
+        "type": "soap",
+        "title": "Test Note 1768753232581",
+        "isQuickNote": true,
+        "template": null,
+        "signature": null,
+        "createdAt": "2026-01-18T16:20:33.015Z"
+      }
+    ],
+    [
+      20,
+      {
+        "id": 20,
+        "patientId": null,
+        "consultationId": null,
+        "doctorId": 2,
+        "content": "This is a test note content.",
+        "type": "soap",
+        "title": "Test Note 1768753332635",
+        "isQuickNote": true,
+        "template": null,
+        "signature": null,
+        "createdAt": "2026-01-18T16:22:13.109Z"
+      }
+    ],
+    [
+      48,
+      {
+        "patientId": 42,
+        "doctorId": 1,
+        "title": "Routine Follow-up",
+        "content": "Patient Carlos presented for a routine follow-up. Vital signs stable. Continuing current treatment plan.",
+        "type": "soap",
+        "id": 48,
+        "consultationId": null,
+        "isQuickNote": false,
+        "template": null,
+        "signature": null,
+        "createdAt": "2026-02-07T01:59:37.676Z"
+      }
+    ],
+    [
+      53,
+      {
+        "patientId": 50,
+        "doctorId": 1,
+        "title": "Routine Follow-up",
+        "content": "Patient Maria presented for a routine follow-up. Vital signs stable. Continuing current treatment plan.",
+        "type": "soap",
+        "id": 53,
+        "consultationId": null,
+        "isQuickNote": false,
+        "template": null,
+        "signature": null,
+        "createdAt": "2026-02-07T01:59:37.679Z"
+      }
+    ],
+    [
+      57,
+      {
+        "patientId": 55,
+        "doctorId": 1,
+        "title": "Routine Follow-up",
+        "content": "Patient Juan presented for a routine follow-up. Vital signs stable. Continuing current treatment plan.",
+        "type": "soap",
+        "id": 57,
+        "consultationId": null,
+        "isQuickNote": false,
+        "template": null,
+        "signature": null,
+        "createdAt": "2026-02-07T01:59:37.681Z"
+      }
+    ],
+    [
+      70,
+      {
+        "patientId": 42,
+        "doctorId": 1,
+        "title": "Routine Follow-up",
+        "content": "Patient Carlos presented for a routine follow-up. Vital signs stable. Continuing current treatment plan.",
+        "type": "soap",
+        "id": 70,
+        "consultationId": null,
+        "isQuickNote": false,
+        "template": null,
+        "signature": null,
+        "createdAt": "2026-02-07T14:33:36.525Z"
+      }
+    ],
+    [
+      74,
+      {
+        "patientId": 50,
+        "doctorId": 1,
+        "title": "Routine Follow-up",
+        "content": "Patient Maria presented for a routine follow-up. Vital signs stable. Continuing current treatment plan.",
+        "type": "soap",
+        "id": 74,
+        "consultationId": null,
+        "isQuickNote": false,
+        "template": null,
+        "signature": null,
+        "createdAt": "2026-02-07T14:33:36.528Z"
+      }
+    ],
+    [
+      77,
+      {
+        "patientId": 55,
+        "doctorId": 1,
+        "title": "Routine Follow-up",
+        "content": "Patient Juan presented for a routine follow-up. Vital signs stable. Continuing current treatment plan.",
+        "type": "soap",
+        "id": 77,
+        "consultationId": null,
+        "isQuickNote": false,
+        "template": null,
+        "signature": null,
+        "createdAt": "2026-02-07T14:33:36.530Z"
+      }
+    ]
+  ],
+  "consultationNotes": [],
+  "invoices": [],
+  "emailTemplates": [],
+  "intakeForms": [],
+  "intakeFormResponses": [],
+  "recordingSessions": [],
+  "devices": [],
+  "bpReadings": [],
+  "glucoseReadings": [],
+  "alertSettings": [],
+  "labKnowledgeBase": [],
+  "labInterpreterSettings": [],
+  "labReports": [],
+  "patientDocuments": [],
+  "medicalNoteTemplates": [],
+  "medicalAlerts": [
+    [
+      43,
+      {
+        "patientId": 42,
+        "type": "condition",
+        "severity": "high",
+        "title": "Type 2 Diabetes",
+        "createdBy": 1,
+        "isActive": true,
+        "id": 43,
+        "description": null,
+        "createdAt": "2026-02-07T01:59:37.663Z"
+      }
+    ],
+    [
+      44,
+      {
+        "patientId": 42,
+        "type": "condition",
+        "severity": "medium",
+        "title": "Hypertension",
+        "createdBy": 1,
+        "isActive": true,
+        "id": 44,
+        "description": null,
+        "createdAt": "2026-02-07T01:59:37.664Z"
+      }
+    ],
+    [
+      56,
+      {
+        "patientId": 55,
+        "type": "allergy",
+        "severity": "critical",
+        "title": "Penicillin",
+        "createdBy": 1,
+        "isActive": true,
+        "id": 56,
+        "description": null,
+        "createdAt": "2026-02-07T01:59:37.681Z"
+      }
+    ],
+    [
+      65,
+      {
+        "patientId": 42,
+        "type": "condition",
+        "severity": "high",
+        "title": "Type 2 Diabetes",
+        "createdBy": 1,
+        "isActive": true,
+        "id": 65,
+        "description": null,
+        "createdAt": "2026-02-07T14:33:36.522Z"
+      }
+    ],
+    [
+      66,
+      {
+        "patientId": 42,
+        "type": "condition",
+        "severity": "medium",
+        "title": "Hypertension",
+        "createdBy": 1,
+        "isActive": true,
+        "id": 66,
+        "description": null,
+        "createdAt": "2026-02-07T14:33:36.523Z"
+      }
+    ],
+    [
+      76,
+      {
+        "patientId": 55,
+        "type": "allergy",
+        "severity": "critical",
+        "title": "Penicillin",
+        "createdBy": 1,
+        "isActive": true,
+        "id": 76,
+        "description": null,
+        "createdAt": "2026-02-07T14:33:36.529Z"
+      }
+    ]
+  ],
+  "patientActivity": [],
+  "prescriptions": [
+    [
+      46,
+      {
+        "patientId": 42,
+        "medicationName": "Metformin",
+        "dosage": "500mg",
+        "frequency": "Twice daily",
+        "prescribedBy": 1,
+        "isActive": true,
+        "id": 46,
+        "duration": null,
+        "instructions": null,
+        "notes": null,
+        "refills": 0,
+        "prescribedDate": "2026-02-07T01:59:37.666Z"
+      }
+    ],
+    [
+      47,
+      {
+        "patientId": 42,
+        "medicationName": "Lisinopril",
+        "dosage": "10mg",
+        "frequency": "Once daily",
+        "prescribedBy": 1,
+        "isActive": true,
+        "id": 47,
+        "duration": null,
+        "instructions": null,
+        "notes": null,
+        "refills": 0,
+        "prescribedDate": "2026-02-07T01:59:37.667Z"
+      }
+    ],
+    [
+      52,
+      {
+        "patientId": 50,
+        "medicationName": "Albuterol Inhaler",
+        "dosage": "2 puffs",
+        "frequency": "As needed",
+        "prescribedBy": 1,
+        "isActive": true,
+        "id": 52,
+        "duration": null,
+        "instructions": null,
+        "notes": null,
+        "refills": 0,
+        "prescribedDate": "2026-02-07T01:59:37.678Z"
+      }
+    ],
+    [
+      68,
+      {
+        "patientId": 42,
+        "medicationName": "Metformin",
+        "dosage": "500mg",
+        "frequency": "Twice daily",
+        "prescribedBy": 1,
+        "isActive": true,
+        "id": 68,
+        "duration": null,
+        "instructions": null,
+        "notes": null,
+        "refills": 0,
+        "prescribedDate": "2026-02-07T14:33:36.524Z"
+      }
+    ],
+    [
+      69,
+      {
+        "patientId": 42,
+        "medicationName": "Lisinopril",
+        "dosage": "10mg",
+        "frequency": "Once daily",
+        "prescribedBy": 1,
+        "isActive": true,
+        "id": 69,
+        "duration": null,
+        "instructions": null,
+        "notes": null,
+        "refills": 0,
+        "prescribedDate": "2026-02-07T14:33:36.525Z"
+      }
+    ],
+    [
+      73,
+      {
+        "patientId": 50,
+        "medicationName": "Albuterol Inhaler",
+        "dosage": "2 puffs",
+        "frequency": "As needed",
+        "prescribedBy": 1,
+        "isActive": true,
+        "id": 73,
+        "duration": null,
+        "instructions": null,
+        "notes": null,
+        "refills": 0,
+        "prescribedDate": "2026-02-07T14:33:36.527Z"
+      }
+    ]
+  ],
+  "medicalHistoryEntries": [
+    [
+      45,
+      {
+        "patientId": 42,
+        "category": "condition",
+        "title": "Diabetes Diagnosis",
+        "date": "2015-06-01",
+        "createdBy": 1,
+        "isActive": true,
+        "id": 45,
+        "description": null,
+        "createdAt": "2026-02-07T01:59:37.665Z"
+      }
+    ],
+    [
+      51,
+      {
+        "patientId": 50,
+        "category": "surgery",
+        "title": "Appendectomy",
+        "date": "2023-10-15",
+        "createdBy": 1,
+        "isActive": true,
+        "id": 51,
+        "description": null,
+        "createdAt": "2026-02-07T01:59:37.678Z"
+      }
+    ],
+    [
+      67,
+      {
+        "patientId": 42,
+        "category": "condition",
+        "title": "Diabetes Diagnosis",
+        "date": "2015-06-01",
+        "createdBy": 1,
+        "isActive": true,
+        "id": 67,
+        "description": null,
+        "createdAt": "2026-02-07T14:33:36.524Z"
+      }
+    ],
+    [
+      72,
+      {
+        "patientId": 50,
+        "category": "surgery",
+        "title": "Appendectomy",
+        "date": "2023-10-15",
+        "createdBy": 1,
+        "isActive": true,
+        "id": 72,
+        "description": null,
+        "createdAt": "2026-02-07T14:33:36.527Z"
+      }
+    ]
+  ],
+  "currentId": 79
+}

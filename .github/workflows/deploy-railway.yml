@@ -1,0 +1,14 @@
+# Railway auto-deploys from GitHub pushes natively.
+# This workflow is disabled - Railway handles deployment automatically.
+# To re-enable manual Railway deploys, add RAILWAY_TOKEN to GitHub Secrets.
+name: Railway Deploy (Disabled)
+
+on:
+  workflow_dispatch: # Only runs manually, not on push
+
+jobs:
+  info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Info
+        run: echo "Railway deploys automatically from GitHub. No manual action needed."
