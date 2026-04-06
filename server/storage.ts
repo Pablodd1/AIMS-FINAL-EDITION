@@ -114,13 +114,13 @@ export interface IStorage {
   updateUserApiKeySettings(id: number, useOwnApiKey: boolean): Promise<User | undefined>;
   getUserApiKey(id: number): Promise<string | null>;
   updateUserApiKey(id: number, apiKey: string | null): Promise<User | undefined>;
-  getPatients(doctorId: number, limit?: number, offset?: number): Promise<Patient[]>;
-  getPatientsCount(doctorId: number): Promise<number>;
+  getPatients(doctorId: number, limit?: number, offset?: number, isAdmin?: boolean): Promise<Patient[]>;
+  getPatientsCount(doctorId: number, isAdmin?: boolean): Promise<number>;
   getClinicPatients(location: string, limit?: number, offset?: number): Promise<Patient[]>;
   getClinicPatientsCount(location: string): Promise<number>;
   getPatient(id: number): Promise<Patient | undefined>;
   createPatient(patient: InsertPatient & { createdBy: number }): Promise<Patient>;
-  getAppointments(doctorId: number): Promise<Appointment[]>;
+  getAppointments(doctorId: number, isAdmin?: boolean): Promise<Appointment[]>;
   getAppointmentsForDateRange(startDate: Date, endDate: Date): Promise<Appointment[]>;
   getAppointment(id: number): Promise<Appointment | undefined>;
   getClinicAppointments(location: string): Promise<Appointment[]>;
@@ -131,7 +131,7 @@ export interface IStorage {
   clearAppointmentToken(id: number): Promise<void>;
   updateAppointment(id: number, updates: Partial<Appointment>): Promise<Appointment | undefined>;
   deleteAppointment(id: number): Promise<boolean>;
-  getMedicalNotes(doctorId: number): Promise<MedicalNote[]>;
+  getMedicalNotes(doctorId: number, isAdmin?: boolean): Promise<MedicalNote[]>;
   getMedicalNotesByPatient(patientId: number): Promise<MedicalNote[]>;
   getMedicalNote(id: number): Promise<MedicalNote | undefined>;
   createMedicalNote(note: InsertMedicalNote): Promise<MedicalNote>;
@@ -502,8 +502,13 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getPatients(doctorId: number, limit?: number, offset?: number): Promise<Patient[]> {
-    let query = db.select().from(patients).where(eq(patients.createdBy, doctorId)).orderBy(desc(patients.createdAt));
+  async getPatients(doctorId: number, limit?: number, offset?: number, isAdmin?: boolean): Promise<Patient[]> {
+    let query;
+    if (isAdmin) {
+      query = db.select().from(patients).orderBy(desc(patients.createdAt));
+    } else {
+      query = db.select().from(patients).where(eq(patients.createdBy, doctorId)).orderBy(desc(patients.createdAt));
+    }
     
     if (limit !== undefined) {
       query = query.limit(limit) as any;
@@ -515,11 +520,12 @@ export class DatabaseStorage implements IStorage {
     return await query;
   }
 
-  async getPatientsCount(doctorId: number): Promise<number> {
-    const [result] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(patients)
-      .where(eq(patients.createdBy, doctorId));
+  async getPatientsCount(doctorId: number, isAdmin?: boolean): Promise<number> {
+    let query = db.select({ count: sql<number>`count(*)` }).from(patients);
+    if (!isAdmin) {
+      query = query.where(eq(patients.createdBy, doctorId)) as any;
+    }
+    const [result] = await query;
     return Number(result.count);
   }
 
@@ -566,7 +572,10 @@ export class DatabaseStorage implements IStorage {
     return newPatient;
   }
 
-  async getAppointments(doctorId: number): Promise<Appointment[]> {
+  async getAppointments(doctorId: number, isAdmin?: boolean): Promise<Appointment[]> {
+    if (isAdmin) {
+      return db.select().from(appointments);
+    }
     return db.select().from(appointments).where(eq(appointments.doctorId, doctorId));
   }
 
@@ -653,7 +662,10 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getMedicalNotes(doctorId: number): Promise<MedicalNote[]> {
+  async getMedicalNotes(doctorId: number, isAdmin?: boolean): Promise<MedicalNote[]> {
+    if (isAdmin) {
+      return db.select().from(medicalNotes);
+    }
     return db.select().from(medicalNotes).where(eq(medicalNotes.doctorId, doctorId));
   }
 

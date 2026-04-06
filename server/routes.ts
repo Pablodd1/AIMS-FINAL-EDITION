@@ -328,6 +328,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         () => storage.getClinicPatientsCount(user.clinicLocation!),
         'Failed to fetch clinic patients count'
       );
+    } else if (user.role === 'admin' || user.role === 'administrator') {
+      patients = await handleDatabaseOperation(
+        () => storage.getPatients(0, limit, offset, true),
+        'Failed to fetch all patients'
+      );
+      total = await handleDatabaseOperation(
+        () => storage.getPatientsCount(0, true),
+        'Failed to fetch all patients count'
+      );
     } else {
       patients = await handleDatabaseOperation(
         () => storage.getPatients(req.user!.id, limit, offset),
@@ -562,6 +571,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         () => storage.getClinicAppointments(user.clinicLocation!),
         'Failed to fetch clinic appointments'
       );
+    } else if (user.role === 'admin' || user.role === 'administrator') {
+      appointments = await handleDatabaseOperation(
+        () => storage.getAppointments(0, true),
+        'Failed to fetch all appointments'
+      );
     } else {
       appointments = await handleDatabaseOperation(
         () => storage.getAppointments(req.user!.id),
@@ -774,10 +788,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Medical Notes routes
   app.get("/api/medical-notes", requireAuth, asyncHandler(async (req, res) => {
-    const notes = await handleDatabaseOperation(
-      () => storage.getMedicalNotes(req.user!.id),
-      'Failed to fetch medical notes'
-    );
+    const user = req.user as any;
+    let notes;
+    if (user.role === 'admin' || user.role === 'administrator') {
+      notes = await handleDatabaseOperation(
+        () => storage.getMedicalNotes(0, true),
+        'Failed to fetch all medical notes'
+      );
+    } else {
+      notes = await handleDatabaseOperation(
+        () => storage.getMedicalNotes(req.user!.id),
+        'Failed to fetch medical notes'
+      );
+    }
     sendSuccessResponse(res, notes);
   }));
 
