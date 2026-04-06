@@ -4,6 +4,34 @@
 
 This project is an AI-driven Electronic Health Records (EHR) and telemedicine platform for healthcare providers. It offers advanced patient management, appointment scheduling, virtual consultations, AI-powered medical note generation, remote patient monitoring, lab interpretation, and billing functionalities. The platform aims to streamline healthcare operations and enhance patient care through intelligent automation and comprehensive tools.
 
+### 🚀 AIMS-FINAL-EDITION (Gold Version)
+
+This is the production-ready build of the AIMS (Artificial Intelligence Medical Services) platform.
+
+### **Production Deployment**
+- **URL**: [https://aims-final-edition-production.up.railway.app](https://aims-final-edition-production.up.railway.app)
+- **Infrastructure**: Railway (Nixpacks) + PostgreSQL
+- **AI Engine**: OpenAI GPT-4o / Gemini Pro / Moonshot Kimi
+
+### **Access Credentials (Seeded)**
+- **System Administrator**: `admin` / `admin123` (Global view of all patients/notes)
+- **Primary Doctor**: `provider` / `provider123`
+- **Family Physician**: `doctor` / `doctor123`
+
+### **Key Gold Features**
+1.  **Unified Command Hub**: Floating control center for recording, navigation, and AI actions.
+2.  **Medical Scribe (Pro)**: Live transcription via Web Speech API with dual-provider (Gemini/OpenAI) SOAP generation.
+3.  **Global Admin Control**: High-level clinic management with access to all provider records.
+4.  **Premium Aesthetics**: Modern glassmorphism design with dynamic hover states and responsive layouts.
+5.  **Multi-Language Support**: Fully internationalized (English/Spanish) clinical interface.
+6.  **Medical Coding**: Intelligent ICD-10 and CPT code suggestion directly from clinical consultation audio.
+
+### **Getting Started Locally**
+1.  `npm install`
+2.  `npm run db:push`
+3.  `npm run db:seed`
+4.  `npm run dev`
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
