@@ -5,6 +5,9 @@ import { users } from '@shared/schema';
 import { pool } from '../db';
 import { hashPassword } from '../auth';
 import { z } from 'zod';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || "aims-default-secret-change-in-production";
 
 export const adminRouter = Router();
 
@@ -21,9 +24,26 @@ const createUserSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-// Middleware to check if user has admin access
-const checkAdminAccess = (req: Request, res: Response, next: Function) => {
+// Middleware to check if user has admin access - supports BOTH JWT Bearer tokens AND session auth
+const checkAdminAccess = async (req: Request, res: Response, next: Function) => {
   // For API endpoints, we check if the user is authenticated and has admin role
+  // First try JWT Bearer token (used by frontend for API calls)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      const user = await storage.getUser(decoded.id);
+      if (user && ['admin', 'administrator'].includes(user.role)) {
+        (req as any).user = user;
+        return next();
+      }
+    } catch {
+      // Token invalid or expired, fall through to session check
+    }
+  }
+  
+  // Fallback: session-based auth
   if (!req.isAuthenticated()) {
     return res.status(401).json({ error: 'Not authenticated' });
   }

@@ -49,6 +49,7 @@ export const patients = pgTable("patients", {
   address: text("address"),
   medicalHistory: text("medical_history"),
   createdBy: integer("created_by").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Medical alerts for patients

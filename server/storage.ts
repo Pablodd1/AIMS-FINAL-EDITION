@@ -505,9 +505,9 @@ export class DatabaseStorage implements IStorage {
   async getPatients(doctorId: number, limit?: number, offset?: number, isAdmin?: boolean): Promise<Patient[]> {
     let query;
     if (isAdmin) {
-      query = db.select().from(patients).orderBy(desc(patients.createdAt));
+      query = db.select().from(patients).orderBy(sql`${patients.createdAt} DESC`);
     } else {
-      query = db.select().from(patients).where(eq(patients.createdBy, doctorId)).orderBy(desc(patients.createdAt));
+      query = db.select().from(patients).where(eq(patients.createdBy, doctorId)).orderBy(sql`${patients.createdAt} DESC`);
     }
     
     if (limit !== undefined) {
@@ -537,7 +537,7 @@ export class DatabaseStorage implements IStorage {
       .from(patients)
       .innerJoin(users, eq(patients.createdBy, users.id))
       .where(eq(users.clinicLocation, location))
-      .orderBy(desc(patients.createdAt));
+      .orderBy(sql`${patients.createdAt} DESC`);
 
     if (limit !== undefined) {
       query = query.limit(limit) as any;
@@ -985,14 +985,14 @@ export class DatabaseStorage implements IStorage {
     return db.select()
       .from(recordingSessions)
       .where(eq(recordingSessions.doctorId, doctorId))
-      .orderBy(desc(recordingSessions.startTime));
+      .orderBy(sql`${recordingSessions.startTime} DESC`);
   }
 
   async getRecordingSessionsByPatient(patientId: number): Promise<RecordingSession[]> {
     return db.select()
       .from(recordingSessions)
       .where(eq(recordingSessions.patientId, patientId))
-      .orderBy(desc(recordingSessions.startTime));
+      .orderBy(sql`${recordingSessions.startTime} DESC`);
   }
 
   async getRecordingSession(id: number): Promise<RecordingSession | undefined> {
@@ -1045,7 +1045,7 @@ export class DatabaseStorage implements IStorage {
     return db.select()
       .from(consultationParticipants)
       .where(eq(consultationParticipants.roomId, roomId))
-      .orderBy(asc(consultationParticipants.joinedAt));
+      .orderBy(sql`${consultationParticipants.joinedAt} ASC`);
   }
 
   async getActiveParticipantsByRoom(roomId: string): Promise<ConsultationParticipant[]> {
@@ -1055,7 +1055,7 @@ export class DatabaseStorage implements IStorage {
         eq(consultationParticipants.roomId, roomId),
         eq(consultationParticipants.isActive, true)
       ))
-      .orderBy(asc(consultationParticipants.joinedAt));
+      .orderBy(sql`${consultationParticipants.joinedAt} ASC`);
   }
 
   async addParticipant(participant: InsertConsultationParticipant): Promise<ConsultationParticipant> {
@@ -1141,7 +1141,7 @@ export class DatabaseStorage implements IStorage {
     const query = db.select()
       .from(bpReadings)
       .where(eq(bpReadings.patientId, patientId))
-      .orderBy(desc(bpReadings.timestamp));
+      .orderBy(sql`${bpReadings.timestamp} DESC`);
 
     if (limit) {
       return query.limit(limit);
@@ -1154,7 +1154,7 @@ export class DatabaseStorage implements IStorage {
     const query = db.select()
       .from(bpReadings)
       .where(eq(bpReadings.deviceId, deviceId))
-      .orderBy(desc(bpReadings.timestamp));
+      .orderBy(sql`${bpReadings.timestamp} DESC`);
 
     if (limit) {
       return query.limit(limit);
@@ -1179,7 +1179,7 @@ export class DatabaseStorage implements IStorage {
     const query = db.select()
       .from(glucoseReadings)
       .where(eq(glucoseReadings.patientId, patientId))
-      .orderBy(desc(glucoseReadings.timestamp));
+      .orderBy(sql`${glucoseReadings.timestamp} DESC`);
 
     if (limit) {
       return query.limit(limit);
@@ -1192,7 +1192,7 @@ export class DatabaseStorage implements IStorage {
     const query = db.select()
       .from(glucoseReadings)
       .where(eq(glucoseReadings.deviceId, deviceId))
-      .orderBy(desc(glucoseReadings.timestamp));
+      .orderBy(sql`${glucoseReadings.timestamp} DESC`);
 
     if (limit) {
       return query.limit(limit);
@@ -1276,10 +1276,10 @@ export class DatabaseStorage implements IStorage {
       if (userId) {
         return await db.select().from(labKnowledgeBase)
           .where(eq(labKnowledgeBase.userId, userId))
-          .orderBy(labKnowledgeBase.test_name);
+          .orderBy(sql`${labKnowledgeBase.test_name} ASC`);
       } else {
         // For backward compatibility, return all if no userId provided
-        return await db.select().from(labKnowledgeBase).orderBy(labKnowledgeBase.test_name);
+        return await db.select().from(labKnowledgeBase).orderBy(sql`${labKnowledgeBase.test_name} ASC`);
       }
     } catch (error) {
       logError("Error fetching lab knowledge base:", error);
@@ -1418,7 +1418,7 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(labReports)
         .where(eq(labReports.doctorId, doctorId))
-        .orderBy(desc(labReports.createdAt));
+        .orderBy(sql`${labReports.createdAt} DESC`);
     } catch (error) {
       logError("Error fetching lab reports:", error);
       return [];
@@ -1431,7 +1431,7 @@ export class DatabaseStorage implements IStorage {
       return await db
         .select()
         .from(medicalNoteTemplates)
-        .orderBy(asc(medicalNoteTemplates.type));
+        .orderBy(sql`${medicalNoteTemplates.type} ASC`);
     } catch (error) {
       logError("Error fetching medical note templates:", error);
       return [];
@@ -1444,7 +1444,7 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(medicalNoteTemplates)
         .where(eq(medicalNoteTemplates.type, type as any))
-        .orderBy(asc(medicalNoteTemplates.createdAt));
+        .orderBy(sql`${medicalNoteTemplates.createdAt} ASC`);
     } catch (error) {
       logError("Error fetching medical note templates by type:", error);
       return [];
@@ -1512,7 +1512,7 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(labReports)
         .where(eq(labReports.patientId, patientId))
-        .orderBy(desc(labReports.createdAt));
+        .orderBy(sql`${labReports.createdAt} DESC`);
     } catch (error) {
       logError("Error fetching lab reports by patient:", error);
       return [];
@@ -1570,7 +1570,7 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(patientDocuments)
         .where(eq(patientDocuments.patientId, patientId))
-        .orderBy(desc(patientDocuments.uploadedAt));
+        .orderBy(sql`${patientDocuments.uploadedAt} DESC`);
     } catch (error) {
       logError("Error fetching patient documents:", error);
       return [];
@@ -1736,7 +1736,7 @@ async deletePatientDocument(id: number): Promise<boolean> {
             sql`${patientActivity.title} = 'Patient Checked In'`
           )
         )
-        .orderBy(desc(patientActivity.date));
+        .orderBy(sql`${patientActivity.date} DESC`);
 
       return results.map(r => ({
         ...r,
@@ -1778,7 +1778,7 @@ async deletePatientDocument(id: number): Promise<boolean> {
   async getMedicalAlertsByPatient(patientId: number): Promise<MedicalAlert[]> {
     return db.select().from(medicalAlerts)
       .where(and(eq(medicalAlerts.patientId, patientId), eq(medicalAlerts.isActive, true)))
-      .orderBy(desc(medicalAlerts.createdAt));
+      .orderBy(sql`${medicalAlerts.createdAt} DESC`);
   }
 
   async createMedicalAlert(alert: InsertMedicalAlert): Promise<MedicalAlert> {
@@ -1806,7 +1806,7 @@ async deletePatientDocument(id: number): Promise<boolean> {
   async getPatientActivity(patientId: number): Promise<PatientActivity[]> {
     return db.select().from(patientActivity)
       .where(eq(patientActivity.patientId, patientId))
-      .orderBy(desc(patientActivity.date));
+      .orderBy(sql`${patientActivity.date} DESC`);
   }
 
   async createPatientActivity(activity: InsertPatientActivity): Promise<PatientActivity> {
@@ -1825,7 +1825,7 @@ async deletePatientDocument(id: number): Promise<boolean> {
   async getPrescriptionsByPatient(patientId: number): Promise<Prescription[]> {
     return db.select().from(prescriptions)
       .where(and(eq(prescriptions.patientId, patientId), eq(prescriptions.isActive, true)))
-      .orderBy(desc(prescriptions.prescribedDate));
+      .orderBy(sql`${prescriptions.prescribedDate} DESC`);
   }
 
   async createPrescription(prescription: InsertPrescription): Promise<Prescription> {
@@ -1853,7 +1853,7 @@ async deletePatientDocument(id: number): Promise<boolean> {
   async getMedicalHistoryEntriesByPatient(patientId: number): Promise<MedicalHistoryEntry[]> {
     return db.select().from(medicalHistoryEntries)
       .where(and(eq(medicalHistoryEntries.patientId, patientId), eq(medicalHistoryEntries.isActive, true)))
-      .orderBy(desc(medicalHistoryEntries.createdAt));
+      .orderBy(sql`${medicalHistoryEntries.createdAt} DESC`);
   }
 
   async createMedicalHistoryEntry(entry: InsertMedicalHistoryEntry): Promise<MedicalHistoryEntry> {
@@ -1940,7 +1940,7 @@ async deletePatientDocument(id: number): Promise<boolean> {
       .select()
       .from(customNotePrompts)
       .where(eq(customNotePrompts.isGlobal, true))
-      .orderBy(asc(customNotePrompts.noteType));
+      .orderBy(sql`${customNotePrompts.noteType} ASC`);
   }
 
   async getGlobalPrompt(id: number): Promise<CustomNotePrompt | undefined> {
@@ -1991,7 +1991,7 @@ async deletePatientDocument(id: number): Promise<boolean> {
       .select()
       .from(cptCodes)
       .where(eq(cptCodes.doctorId, doctorId))
-      .orderBy(cptCodes.code);
+      .orderBy(sql`${cptCodes.code} ASC`);
   }
 
   async getCptCode(id: number): Promise<CptCode | undefined> {
@@ -2033,7 +2033,7 @@ async deletePatientDocument(id: number): Promise<boolean> {
       .select()
       .from(icd10Codes)
       .where(eq(icd10Codes.doctorId, doctorId))
-      .orderBy(icd10Codes.code);
+      .orderBy(sql`${icd10Codes.code} ASC`);
   }
 
   async getIcd10Code(id: number): Promise<Icd10Code | undefined> {
@@ -2075,7 +2075,7 @@ async deletePatientDocument(id: number): Promise<boolean> {
       .select()
       .from(favoriteCodes)
       .where(eq(favoriteCodes.doctorId, doctorId))
-      .orderBy(desc(favoriteCodes.createdAt));
+      .orderBy(sql`${favoriteCodes.createdAt} DESC`);
   }
 
   async addFavoriteCode(favorite: InsertFavoriteCode): Promise<FavoriteCode> {

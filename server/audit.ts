@@ -1,6 +1,6 @@
 import { db } from './db';
 import { auditLogs, type InsertAuditLog } from '@shared/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 export interface AuditLogParams {
   userId?: number;
@@ -32,7 +32,7 @@ export const createAuditLog = async (params: AuditLogParams): Promise<void> => {
 export const getAuditLogs = async (limit: number = 100) => {
   return db.select()
     .from(auditLogs)
-    .orderBy(desc(auditLogs.timestamp))
+    .orderBy(sql`${auditLogs.timestamp} DESC`)
     .limit(limit);
 };
 
@@ -40,7 +40,7 @@ export const getAuditLogsByUser = async (userId: number, limit: number = 100) =>
   return db.select()
     .from(auditLogs)
     .where(eq(auditLogs.userId, userId))
-    .orderBy(desc(auditLogs.timestamp))
+    .orderBy(sql`${auditLogs.timestamp} DESC`)
     .limit(limit);
 };
 
@@ -48,7 +48,7 @@ export const getAuditLogsByResource = async (resource: string, resourceId: numbe
   return db.select()
     .from(auditLogs)
     .where(eq(auditLogs.resourceId, resourceId))
-    .orderBy(desc(auditLogs.timestamp))
+    .orderBy(sql`${auditLogs.timestamp} DESC`)
     .limit(limit);
 };
 
@@ -56,7 +56,7 @@ export const getAuditLogsByAction = async (action: string, limit: number = 100) 
   return db.select()
     .from(auditLogs)
     .where(eq(auditLogs.action, action))
-    .orderBy(desc(auditLogs.timestamp))
+    .orderBy(sql`${auditLogs.timestamp} DESC`)
     .limit(limit);
 };
 

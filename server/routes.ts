@@ -1606,13 +1606,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Invoice routes
   app.get("/api/invoices", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      // Support both JWT Bearer token and session auth
+      const authHeader = req.headers.authorization;
+      let userId = req.user?.id;
+      
+      if (!userId && authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const jwt = await import('jsonwebtoken');
+          const token = authHeader.substring(7);
+          const decoded = jwt.verify(token, process.env.JWT_SECRET || "aims-default-secret-change-in-production") as any;
+          userId = decoded.id;
+        } catch {
+          return res.status(401).json({ message: "Invalid or expired token" });
+        }
+      }
+      
+      if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      const doctorId = req.user!.id;
 
-      const invoices = await storage.getInvoices(doctorId);
-      res.json(invoices);
+      const invoices = await storage.getInvoices(userId);
+      sendSuccessResponse(res, invoices);
     } catch (error) {
       logError("Error fetching invoices:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to fetch invoices" });
