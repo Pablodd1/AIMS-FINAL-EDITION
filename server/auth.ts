@@ -358,4 +358,8 @@ export function setupAuth(app: Express) {
     "/api/telemedicine",
     "/api/invoices"
   ], jwtOrSessionAuth);
+
+  return jwtOrSessionAuth;
 }
+
+export { jwtOrSessionAuth };

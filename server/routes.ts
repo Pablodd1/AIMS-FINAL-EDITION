@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from 'ws';
 import { randomBytes, createHash } from 'crypto';
 import { setupAuth } from "./auth";
+import jwt from 'jsonwebtoken';
 import { storage } from "./storage";
 import { pool } from "./db";
 import { FileStorage } from "./file-storage";
@@ -75,6 +76,30 @@ interface VideoChatRoom {
 
 // Store active rooms in memory
 const activeRooms = new Map<string, VideoChatRoom>();
+
+// JWT_SECRET for manual JWT verification in inline auth checks
+const JWT_SECRET = process.env.JWT_SECRET || "aims-default-secret-change-in-production";
+
+// Helper function to get authenticated user from request (supports both JWT Bearer and session)
+async function getAuthenticatedUser(req: Request): Promise<any> {
+  // First check JWT Bearer token (used by frontend for API calls)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      const user = await storage.getUser(decoded.id);
+      return user;
+    } catch {
+      return null;
+    }
+  }
+  // Fallback: session-based auth
+  if (req.isAuthenticated()) {
+    return req.user;
+  }
+  return null;
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Run database migrations on startup (safe to run multiple times)
@@ -1021,10 +1046,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   app.post("/api/medical-notes", async (req, res) => {
-    if (!req.isAuthenticated()) {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const doctorId = req.user.id;
+    (req as any).user = user;
+    const doctorId = user.id;
 
     const validation = insertMedicalNoteSchema.safeParse(req.body);
     if (!validation.success) {
@@ -1090,13 +1117,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Quick Notes routes (notes without patient association)
   app.get("/api/quick-notes", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      const doctorId = req.user.id;
+      (req as any).user = user;
+      const doctorId = user.id;
 
       const notes = await storage.getQuickNotes(doctorId);
-      res.json(notes);
+      sendSuccessResponse(res, notes);
     } catch (error) {
       logError("Error fetching quick notes:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to fetch quick notes" });
@@ -1105,10 +1134,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/quick-notes", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      const doctorId = req.user.id;
+      (req as any).user = user;
+      const doctorId = user.id;
 
       // Create a modified schema for quick notes that doesn't require patientId
       const quickNoteData = {
@@ -1118,7 +1149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const note = await storage.createQuickNote(quickNoteData);
-      res.status(201).json(note);
+      sendSuccessResponse(res, note, 'Quick note created successfully', 201);
     } catch (error: any) {
       logError("Error creating quick note:", error, { requestId: (req as any).id });
       res.status(400).json({ message: "Failed to create quick note", error: error.message });
@@ -1127,32 +1158,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Consultation Notes routes
   app.get("/api/consultation-notes", async (req, res) => {
-    if (!req.isAuthenticated()) {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const doctorId = req.user.id;
+    (req as any).user = user;
+    const doctorId = user.id;
 
     const notes = await storage.getConsultationNotes(doctorId);
-    res.json(notes);
+    sendSuccessResponse(res, notes);
   });
 
   app.get("/api/patients/:patientId/consultation-notes", async (req, res) => {
-    if (!req.isAuthenticated()) {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
+    (req as any).user = user;
 
     const patientId = parseInt(req.params.patientId);
     const patient = await storage.getPatient(patientId);
     if (!patient) return res.sendStatus(404);
 
     const notes = await storage.getConsultationNotesByPatient(patientId);
-    res.json(notes);
+    sendSuccessResponse(res, notes);
   });
 
   app.get("/api/consultation-notes/:id", async (req, res) => {
-    if (!req.isAuthenticated()) {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
+    (req as any).user = user;
 
     const noteId = parseInt(req.params.id);
     if (isNaN(noteId)) {
@@ -1160,14 +1197,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     const note = await storage.getConsultationNote(noteId);
     if (!note) return res.sendStatus(404);
-    res.json(note);
+    sendSuccessResponse(res, note);
   });
 
   app.post("/api/consultation-notes", async (req, res) => {
-    if (!req.isAuthenticated()) {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const doctorId = req.user.id;
+    (req as any).user = user;
+    const doctorId = user.id;
 
     const validation = insertConsultationNoteSchema.safeParse(req.body);
     if (!validation.success) {
@@ -1185,15 +1224,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doctorId: doctorId,
     });
 
-    res.status(201).json(note);
+    sendSuccessResponse(res, note, 'Consultation note created successfully', 201);
   });
 
   // Create medical note from consultation
   app.post("/api/medical-notes/from-consultation", async (req, res) => {
-    if (!req.isAuthenticated()) {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const doctorId = req.user.id;
+    (req as any).user = user;
+    const doctorId = user.id;
 
     // Extract required fields from request
     const { consultationId, patientId, content, type, title } = req.body;
@@ -1249,12 +1290,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Medical Note Templates routes
   app.get("/api/medical-note-templates", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const templates = await storage.getMedicalNoteTemplates();
-      res.json(templates);
+      sendSuccessResponse(res, templates);
     } catch (error) {
       logError("Error fetching medical note templates:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to fetch medical note templates" });
@@ -1263,13 +1306,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/medical-note-templates/type/:type", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const type = req.params.type;
       const templates = await storage.getMedicalNoteTemplatesByType(type);
-      res.json(templates);
+      sendSuccessResponse(res, templates);
     } catch (error) {
       logError("Error fetching medical note templates by type:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to fetch medical note templates" });
@@ -1278,9 +1323,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/medical-note-templates/:id", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const id = parseInt(req.params.id);
       const template = await storage.getMedicalNoteTemplate(id);
@@ -1289,7 +1336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Template not found" });
       }
 
-      res.json(template);
+      sendSuccessResponse(res, template);
     } catch (error) {
       logError("Error fetching medical note template:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to fetch medical note template" });
@@ -1298,9 +1345,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/medical-note-templates", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const validation = insertMedicalNoteTemplateSchema.safeParse(req.body);
       if (!validation.success) {
@@ -1308,7 +1357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const template = await storage.createMedicalNoteTemplate(validation.data);
-      res.status(201).json(template);
+      sendSuccessResponse(res, template, 'Template created successfully', 201);
     } catch (error) {
       logError("Error creating medical note template:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to create medical note template" });
@@ -1317,9 +1366,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/medical-note-templates/:id", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const id = parseInt(req.params.id);
       const template = await storage.getMedicalNoteTemplate(id);
@@ -1329,7 +1380,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedTemplate = await storage.updateMedicalNoteTemplate(id, req.body);
-      res.json(updatedTemplate);
+      sendSuccessResponse(res, updatedTemplate, 'Template updated successfully');
     } catch (error) {
       logError("Error updating medical note template:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to update medical note template" });
@@ -1338,9 +1389,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/medical-note-templates/:id", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const id = parseInt(req.params.id);
       const result = await storage.deleteMedicalNoteTemplate(id);
@@ -1349,7 +1402,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Template not found" });
       }
 
-      res.sendStatus(204);
+      sendSuccessResponse(res, { id }, 'Template deleted successfully');
     } catch (error) {
       logError("Error deleting medical note template:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to delete medical note template" });
@@ -1359,13 +1412,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Custom note prompts routes
   app.get("/api/custom-note-prompts", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
-      const userId = req.user!.id;
+      const userId = user.id;
       const prompts = await storage.getCustomNotePrompts(userId);
-      res.json(prompts);
+      sendSuccessResponse(res, prompts);
     } catch (error) {
       logError("Error fetching custom note prompts:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to fetch custom note prompts" });
@@ -1406,22 +1461,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/custom-note-prompts/:noteType", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
-      const userId = req.user!.id;
+      const userId = user.id;
       const { noteType } = req.params;
 
       // First, try to get user's custom prompt
       const userPrompt = await storage.getCustomNotePrompt(userId, noteType);
 
       if (userPrompt) {
-        return res.json(userPrompt);
+        return sendSuccessResponse(res, userPrompt);
       }
 
       // If no user prompt, return null (no global prompts in current schema)
-      res.json(null);
+      sendSuccessResponse(res, null);
     } catch (error) {
       logError("Error fetching custom note prompt:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to fetch custom note prompt" });
@@ -1430,11 +1487,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/custom-note-prompts", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
-      const userId = req.user!.id;
+      const userId = user.id;
       const { noteType, systemPrompt, templateContent } = req.body;
 
       const prompt = await storage.saveCustomNotePrompt({
@@ -1444,7 +1503,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         templateContent,
       });
 
-      res.json(prompt);
+      sendSuccessResponse(res, prompt, 'Custom prompt saved successfully');
     } catch (error) {
       logError("Error saving custom note prompt:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to save custom note prompt" });
@@ -1453,14 +1512,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/custom-note-prompts/:noteType", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
-      const userId = req.user!.id;
+      const userId = user.id;
       const { noteType } = req.params;
       await storage.deleteCustomNotePrompt(userId, noteType);
-      res.json({ success: true });
+      sendSuccessResponse(res, { success: true }, 'Custom prompt deleted successfully');
     } catch (error) {
       logError("Error deleting custom note prompt:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to delete custom note prompt" });
@@ -1470,12 +1531,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User API Key management routes
   app.get("/api/user/api-key", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
-      const userId = req.user!.id;
-      const user = await storage.getUser(userId);
+      const userId = user.id;
+      const userData = await storage.getUser(userId);
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -1508,20 +1571,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/user/api-key", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const { apiKey } = req.body;
-      const userId = req.user!.id;
-      const user = await storage.getUser(userId);
+      const userId = user.id;
+      const userData = await storage.getUser(userId);
 
-      if (!user) {
+      if (!userData) {
         return res.status(404).json({ message: "User not found" });
       }
 
       // Check if user is allowed to use their own API key
-      if (!user.useOwnApiKey) {
+      if (!userData.useOwnApiKey) {
         return res.status(403).json({
           message: "Your account is not configured to use personal API keys. Contact your administrator to enable this feature."
         });
@@ -1547,47 +1612,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete user API key
   app.delete("/api/user/api-key", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
-      const userId = req.user!.id;
-      const user = await storage.getUser(userId);
+      const userId = user.id;
+      const userData = await storage.getUser(userId);
 
-      if (!user) {
+      if (!userData) {
         return res.status(404).json({ message: "User not found" });
       }
 
       // Check if user is allowed to use their own API key
-      if (!user.useOwnApiKey) {
-        return res.status(403).json({
-          message: "Your account is not configured to use personal API keys. Contact your administrator to enable this feature."
-        });
-      }
-
-      await storage.updateUserApiKey(userId, null);
-      res.json({ success: true, message: "API key removed successfully" });
-    } catch (error) {
-      logError("Error removing user API key:", error, { requestId: (req as any).id });
-      res.status(500).json({ message: "Failed to remove API key" });
-    }
-  });
-
-  app.delete("/api/user/api-key", async (req, res) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const userId = req.user!.id;
-      const user = await storage.getUser(userId);
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Check if user is allowed to manage their own API key
-      if (!user.useOwnApiKey) {
+      if (!userData.useOwnApiKey) {
         return res.status(403).json({
           message: "Your account is not configured to use personal API keys. Contact your administrator to enable this feature."
         });
@@ -1635,13 +1674,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/invoices/patient/:patientId", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const patientId = parseInt(req.params.patientId);
       const invoices = await storage.getInvoicesByPatient(patientId);
-      res.json(invoices);
+      sendSuccessResponse(res, invoices);
     } catch (error) {
       logError("Error fetching patient invoices:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to fetch patient invoices" });
@@ -1650,9 +1691,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/invoices/:id", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const invoiceId = parseInt(req.params.id);
       const invoice = await storage.getInvoice(invoiceId);
@@ -1661,7 +1704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Invoice not found" });
       }
 
-      res.json(invoice);
+      sendSuccessResponse(res, invoice);
     } catch (error) {
       logError("Error fetching invoice:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to fetch invoice" });
@@ -1670,10 +1713,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/invoices", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      const doctorId = req.user!.id;
+      (req as any).user = user;
+      const doctorId = user.id;
 
       // Create a modified request body to ensure proper types
       let dueDate;
@@ -1716,7 +1761,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const invoice = await storage.createInvoice(validation.data);
-      res.status(201).json(invoice);
+      sendSuccessResponse(res, invoice, 'Invoice created successfully', 201);
     } catch (error) {
       logError("Error creating invoice:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to create invoice" });
@@ -1725,6 +1770,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/invoices/:id/status", async (req, res) => {
     try {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      (req as any).user = user;
+
       const invoiceId = parseInt(req.params.id);
       const { status } = req.body;
 
@@ -1734,7 +1785,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Invoice not found" });
       }
 
-      res.json(invoice);
+      sendSuccessResponse(res, invoice, 'Invoice status updated successfully');
     } catch (error) {
       logError("Error updating invoice status:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to update invoice status" });
@@ -1743,6 +1794,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/invoices/:id/payment", async (req, res) => {
     try {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      (req as any).user = user;
+
       const invoiceId = parseInt(req.params.id);
       const { amountPaid } = req.body;
 
@@ -1752,7 +1809,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Invoice not found" });
       }
 
-      res.json(invoice);
+      sendSuccessResponse(res, invoice, 'Invoice payment updated successfully');
     } catch (error) {
       logError("Error updating invoice payment:", error, { requestId: (req as any).id });
       res.status(500).json({ message: "Failed to update invoice payment" });
@@ -1781,10 +1838,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get recording sessions (history of telemedicine consultations)
   app.get('/api/telemedicine/recordings', async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      const doctorId = req.user!.id;
+      (req as any).user = user;
+      const doctorId = user.id;
 
       const recordings = await storage.getRecordingSessions(doctorId);
 
@@ -1799,7 +1858,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       );
 
-      res.json(recordingsWithPatients);
+      sendSuccessResponse(res, recordingsWithPatients);
     } catch (error) {
       logError('Error fetching recording sessions:', error, { requestId: (req as any).id });
       res.status(500).json({ message: 'Failed to fetch recording sessions' });
@@ -1809,11 +1868,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new recording session
   app.post('/api/telemedicine/recordings', async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-
-      const doctorId = req.user!.id;
+      (req as any).user = user;
+      const doctorId = user.id;
       const { roomId, patientId, startTime, endTime, duration, status, recordingType, mediaFormat, language } = req.body;
 
       log('Creating recording session:', { requestId: (req as any).id, roomId, patientId, duration, recordingType, mediaFormat, language });
@@ -1839,7 +1899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       log('Recording session created:', { requestId: (req as any).id, recordingId: recording.id });
 
-      res.status(200).json(recording);
+      sendSuccessResponse(res, recording, 'Recording session created successfully', 201);
     } catch (error) {
       logError('Error creating recording session:', error, { requestId: (req as any).id });
       res.status(500).json({ message: 'Failed to create recording session' });
@@ -1849,9 +1909,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get a specific recording session
   app.get('/api/telemedicine/recordings/:id', async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -1865,7 +1927,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const patient = await storage.getPatient(recording.patientId);
 
-      res.json({
+      sendSuccessResponse(res, {
         ...recording,
         patient: patient || { name: 'Unknown Patient' }
       });
@@ -1878,9 +1940,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update transcript or notes for a recording session
   app.patch('/api/telemedicine/recordings/:id', async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -1926,9 +1990,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate transcript from video recording using Deepgram
   app.patch('/api/telemedicine/recordings/:id/generate-transcript', async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -2006,11 +2072,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete a recording session
   app.delete('/api/telemedicine/recordings/:id', async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-
-      const doctorId = req.user!.id;
+      (req as any).user = user;
+      const doctorId = user.id;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -2060,12 +2127,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       log(`Received media upload request for recording ${req.params.id}`, { requestId: (req as any).id });
       log(`Request authenticated: ${req.isAuthenticated()}`, { requestId: (req as any).id });
 
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         log('Upload rejected: not authenticated', { requestId: (req as any).id });
         return res.status(401).json({ message: "Unauthorized" });
       }
-
-      const doctorId = req.user!.id;
+      (req as any).user = user;
+      const doctorId = user.id;
       const recordingId = parseInt(req.params.id);
       log(`Doctor ID: ${doctorId}, Recording ID: ${recordingId}`, { requestId: (req as any).id });
 
@@ -2150,11 +2218,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Retrieve audio recording for a telemedicine session
   app.get('/api/telemedicine/recordings/:id/audio', async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-
-      const doctorId = req.user!.id;
+      (req as any).user = user;
+      const doctorId = user.id;
       const recordingId = parseInt(req.params.id);
 
       if (isNaN(recordingId)) {
@@ -2204,11 +2273,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Retrieve video recording for a telemedicine session
   app.get('/api/telemedicine/recordings/:id/video', async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-
-      const doctorId = req.user!.id;
+      (req as any).user = user;
+      const doctorId = user.id;
       const recordingId = parseInt(req.params.id);
 
       if (isNaN(recordingId)) {
@@ -2258,11 +2328,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Store video recording for a telemedicine session
   app.post('/api/telemedicine/recordings/:id/video', async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-
-      const doctorId = req.user!.id;
+      (req as any).user = user;
+      const doctorId = user.id;
       const recordingId = parseInt(req.params.id);
 
       if (isNaN(recordingId)) {
@@ -2300,10 +2371,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post('/api/telemedicine/rooms', async (req, res) => {
-    if (!req.isAuthenticated()) {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const doctorId = req.user!.id;
+    (req as any).user = user;
+    const doctorId = user.id;
 
     const { patientId, patientName } = req.body;
 
@@ -2639,10 +2712,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Patient intake form routes
   app.get("/api/intake-forms", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      const doctorId = req.user!.id;
+      (req as any).user = user;
+      const doctorId = user.id;
 
       const forms = await storage.getIntakeForms(doctorId);
       res.json(forms);
@@ -2654,9 +2729,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/intake-forms/:id", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      (req as any).user = user;
 
       const formId = parseInt(req.params.id);
       if (isNaN(formId)) {
@@ -2683,10 +2760,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/intake-forms", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      const doctorId = req.user!.id;
+      (req as any).user = user;
+      const doctorId = user.id;
 
       log("Creating intake form with data:", { requestId: (req as any).id, body: req.body });
 
