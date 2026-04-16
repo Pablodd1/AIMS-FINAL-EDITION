@@ -3161,6 +3161,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     sendSuccessResponse(res, { success: true });
   }));
 
+  // TEMPORARY: Fix missing created_at column in patients table (uses pool.query for raw SQL)
+  app.post('/api/db-fix', asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const r1 = await pool.query(`ALTER TABLE patients ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`);
+      const r2 = await pool.query(`UPDATE patients SET created_at = NOW() WHERE created_at IS NULL`);
+      sendSuccessResponse(res, { message: 'done', r1, r2 });
+    } catch (err: any) {
+      sendErrorResponse(res, 500, err.message);
+    }
+  }));
+
   // TEMPORARY: Fix missing created_at column in patients table
   app.post('/api/admin/fix-patients-schema', asyncHandler(async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
@@ -3178,10 +3189,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(401).json({ error: 'Invalid token' });
     }
     try {
-      await db.execute(sql`ALTER TABLE patients ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW() NOT NULL`);
-      await db.execute(sql`ALTER TABLE patients ALTER COLUMN created_at DROP DEFAULT`);
-      await db.execute(sql`UPDATE patients SET created_at = NOW() WHERE created_at IS NULL`);
-      sendSuccessResponse(res, { message: 'patients created_at column added' });
+      const r1 = await pool.query(`ALTER TABLE patients ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`);
+      const r2 = await pool.query(`UPDATE patients SET created_at = NOW() WHERE created_at IS NULL`);
+      sendSuccessResponse(res, { message: 'patients created_at column added', r1, r2 });
     } catch (err: any) {
       sendErrorResponse(res, 500, err.message);
     }
