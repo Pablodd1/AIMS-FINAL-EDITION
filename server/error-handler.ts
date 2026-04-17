@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { storage } from './storage';
 
 // Demo mode - suppress logging for cleaner output
 const DEMO_MODE = process.env.DEMO_MODE === 'true' || process.env.NODE_ENV === 'demo';
+const JWT_SECRET = process.env.JWT_SECRET || "aims-default-secret-change-in-production";
+
 export interface ErrorResponse {
   success: false;
   error: string;
@@ -83,68 +87,103 @@ export function sendSuccessResponse<T>(
   res.status(statusCode).json(successResponse);
 }
 
-// Authentication middleware with proper error handling
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
-  if (!req.isAuthenticated()) {
-    return sendErrorResponse(
-      res,
-      'Authentication required',
-      401,
-      'Please log in to access this resource',
-      'AUTH_REQUIRED'
-    );
+// Helper: get authenticated user from request (supports both JWT Bearer and session)
+async function getUserFromRequest(req: Request): Promise<any> {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      const user = await storage.getUser(decoded.id);
+      return user;
+    } catch {
+      return null;
+    }
   }
-  next();
+  // Fallback: session-based auth
+  if (req.isAuthenticated()) {
+    return req.user;
+  }
+  return null;
+}
+
+// Authentication middleware with proper error handling — supports both JWT Bearer and session
+export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  (async () => {
+    const user = await getUserFromRequest(req);
+    if (!user) {
+      return sendErrorResponse(
+        res,
+        'Authentication required',
+        401,
+        'Please log in to access this resource',
+        'AUTH_REQUIRED'
+      );
+    }
+    (req as any).user = user;
+    next();
+  })();
 }
 
 // Admin role middleware with proper error handling
 export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  if (!req.isAuthenticated()) {
-    return sendErrorResponse(
-      res,
-      'Authentication required',
-      401,
-      'Please log in to access this resource',
-      'AUTH_REQUIRED'
-    );
-  }
-  
-  if (!['admin', 'administrator'].includes(req.user.role)) {
-    return sendErrorResponse(
-      res,
-      'Admin privileges required',
-      403,
-      'You do not have permission to access this resource',
-      'INSUFFICIENT_PRIVILEGES'
-    );
-  }
-  
-  next();
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  (async () => {
+    const user = await getUserFromRequest(req);
+    if (!user) {
+      return sendErrorResponse(
+        res,
+        'Authentication required',
+        401,
+        'Please log in to access this resource',
+        'AUTH_REQUIRED'
+      );
+    }
+
+    if (!['admin', 'administrator'].includes(user.role)) {
+      return sendErrorResponse(
+        res,
+        'Admin privileges required',
+        403,
+        'You do not have permission to access this resource',
+        'INSUFFICIENT_PRPRIVILEGES'
+      );
+    }
+
+    (req as any).user = user;
+    next();
+  })();
 }
 
 // Doctor role middleware with proper error handling
 export function requireDoctor(req: Request, res: Response, next: NextFunction): void {
-  if (!req.isAuthenticated()) {
-    return sendErrorResponse(
-      res,
-      'Authentication required',
-      401,
-      'Please log in to access this resource',
-      'AUTH_REQUIRED'
-    );
-  }
-  
-  if (!['doctor', 'admin', 'administrator'].includes(req.user.role)) {
-    return sendErrorResponse(
-      res,
-      'Doctor privileges required',
-      403,
-      'You do not have permission to access this resource',
-      'INSUFFICIENT_PRIVILEGES'
-    );
-  }
-  
-  next();
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  (async () => {
+    const user = await getUserFromRequest(req);
+    if (!user) {
+      return sendErrorResponse(
+        res,
+        'Authentication required',
+        401,
+        'Please log in to access this resource',
+        'AUTH_REQUIRED'
+      );
+    }
+
+    if (!['doctor', 'admin', 'administrator'].includes(user.role)) {
+      return sendErrorResponse(
+        res,
+        'Doctor privileges required',
+        403,
+        'You do not have permission to access this resource',
+        'INSUFFICIENT_PRIVILEGES'
+      );
+    }
+
+    (req as any).user = user;
+    next();
+  })();
 }
 
 // Global error handler middleware
@@ -283,7 +322,7 @@ export function handleOpenAIError(error: any): AppError {
       'Please check your OpenAI API key in settings'
     );
   }
-  
+
   if (error?.status === 429) {
     return new AppError(
       'API rate limit exceeded',
@@ -292,7 +331,7 @@ export function handleOpenAIError(error: any): AppError {
       'Please try again later or check your OpenAI usage limits'
     );
   }
-  
+
   if (error?.status === 403) {
     return new AppError(
       'API access forbidden',
@@ -301,7 +340,7 @@ export function handleOpenAIError(error: any): AppError {
       'Your API key does not have access to this service'
     );
   }
-  
+
   return new AppError(
     'AI service temporarily unavailable',
     503,
