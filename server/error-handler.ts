@@ -1,10 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { storage } from './storage';
+import { getAuthenticatedUserFromRequest } from './auth-utils';
 
 // Demo mode - suppress logging for cleaner output
 const DEMO_MODE = process.env.DEMO_MODE === 'true' || process.env.NODE_ENV === 'demo';
-const JWT_SECRET = process.env.JWT_SECRET || "aims-default-secret-change-in-production";
 
 export interface ErrorResponse {
   success: false;
@@ -15,7 +13,6 @@ export interface ErrorResponse {
   timestamp?: string;
 }
 
-// Success response interface
 export interface SuccessResponse<T = any> {
   success: true;
   data: T;
@@ -23,7 +20,6 @@ export interface SuccessResponse<T = any> {
   timestamp: string;
 }
 
-// Custom error class for application-specific errors
 export class AppError extends Error {
   public statusCode: number;
   public code?: string;
@@ -41,12 +37,10 @@ export class AppError extends Error {
     this.code = code;
     this.details = details;
     this.isOperational = true;
-
     Error.captureStackTrace(this, this.constructor);
   }
 }
 
-// Error response helper
 export function sendErrorResponse(
   res: Response,
   error: string,
@@ -62,15 +56,12 @@ export function sendErrorResponse(
     statusCode,
     timestamp: new Date().toISOString()
   };
-
-  // Suppress error logging in demo mode
   if (!DEMO_MODE) {
     console.error(`[${statusCode}] ${error}`, details ? { details } : '');
   }
   res.status(statusCode).json(errorResponse);
 }
 
-// Success response helper
 export function sendSuccessResponse<T>(
   res: Response,
   data: T,
@@ -83,35 +74,13 @@ export function sendSuccessResponse<T>(
     message,
     timestamp: new Date().toISOString()
   };
-
   res.status(statusCode).json(successResponse);
 }
 
-// Helper: get authenticated user from request (supports both JWT Bearer and session)
-async function getUserFromRequest(req: Request): Promise<any> {
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.substring(7);
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
-      const user = await storage.getUser(decoded.id);
-      return user;
-    } catch {
-      return null;
-    }
-  }
-  // Fallback: session-based auth
-  if (req.isAuthenticated()) {
-    return req.user;
-  }
-  return null;
-}
-
-// Authentication middleware with proper error handling — supports both JWT Bearer and session
+// Authentication middleware — supports both JWT Bearer tokens and session auth
+// Uses getAuthenticatedUserFromRequest from auth-utils.ts (no circular deps)
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  (async () => {
-    const user = await getUserFromRequest(req);
+  getAuthenticatedUserFromRequest(req).then((user) => {
     if (!user) {
       return sendErrorResponse(
         res,
@@ -123,14 +92,16 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
     }
     (req as any).user = user;
     next();
-  })();
+  }).catch((err) => {
+    if (!DEMO_MODE) {
+      console.error('Auth error:', err);
+    }
+    sendErrorResponse(res, 'Authentication error', 401, 'Authentication failed', 'AUTH_ERROR');
+  });
 }
 
-// Admin role middleware with proper error handling
 export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  (async () => {
-    const user = await getUserFromRequest(req);
+  getAuthenticatedUserFromRequest(req).then((user) => {
     if (!user) {
       return sendErrorResponse(
         res,
@@ -140,27 +111,27 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction): v
         'AUTH_REQUIRED'
       );
     }
-
     if (!['admin', 'administrator'].includes(user.role)) {
       return sendErrorResponse(
         res,
         'Admin privileges required',
         403,
         'You do not have permission to access this resource',
-        'INSUFFICIENT_PRPRIVILEGES'
+        'INSUFFICIENT_PRIVILEGES'
       );
     }
-
     (req as any).user = user;
     next();
-  })();
+  }).catch((err) => {
+    if (!DEMO_MODE) {
+      console.error('Auth error:', err);
+    }
+    sendErrorResponse(res, 'Authentication error', 401, 'Authentication failed', 'AUTH_ERROR');
+  });
 }
 
-// Doctor role middleware with proper error handling
 export function requireDoctor(req: Request, res: Response, next: NextFunction): void {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  (async () => {
-    const user = await getUserFromRequest(req);
+  getAuthenticatedUserFromRequest(req).then((user) => {
     if (!user) {
       return sendErrorResponse(
         res,
@@ -170,7 +141,6 @@ export function requireDoctor(req: Request, res: Response, next: NextFunction): 
         'AUTH_REQUIRED'
       );
     }
-
     if (!['doctor', 'admin', 'administrator'].includes(user.role)) {
       return sendErrorResponse(
         res,
@@ -180,84 +150,43 @@ export function requireDoctor(req: Request, res: Response, next: NextFunction): 
         'INSUFFICIENT_PRIVILEGES'
       );
     }
-
     (req as any).user = user;
     next();
-  })();
+  }).catch((err) => {
+    if (!DEMO_MODE) {
+      console.error('Auth error:', err);
+    }
+    sendErrorResponse(res, 'Authentication error', 401, 'Authentication failed', 'AUTH_ERROR');
+  });
 }
 
-// Global error handler middleware
 export function globalErrorHandler(
   err: Error | AppError,
   req: Request,
   res: Response,
   next: NextFunction
 ): void {
-  // If response was already sent, pass to default Express error handler
   if (res.headersSent) {
     return next(err);
   }
-
-  // Handle operational errors
   if (err instanceof AppError && err.isOperational) {
-    return sendErrorResponse(
-      res,
-      err.message,
-      err.statusCode,
-      err.details,
-      err.code
-    );
+    return sendErrorResponse(res, err.message, err.statusCode, err.details, err.code);
   }
-
-  // Handle validation errors
   if (err.name === 'ValidationError') {
-    return sendErrorResponse(
-      res,
-      'Validation failed',
-      400,
-      err.message,
-      'VALIDATION_ERROR'
-    );
+    return sendErrorResponse(res, 'Validation failed', 400, err.message, 'VALIDATION_ERROR');
   }
-
-  // Handle database errors
   if (err.message?.includes('violates unique constraint')) {
-    return sendErrorResponse(
-      res,
-      'Resource already exists',
-      409,
-      'A record with this information already exists',
-      'DUPLICATE_RESOURCE'
-    );
+    return sendErrorResponse(res, 'Resource already exists', 409, 'A record with this information already exists', 'DUPLICATE_RESOURCE');
   }
-
   if (err.message?.includes('foreign key constraint')) {
-    return sendErrorResponse(
-      res,
-      'Invalid reference',
-      400,
-      'Referenced resource does not exist',
-      'INVALID_REFERENCE'
-    );
+    return sendErrorResponse(res, 'Invalid reference', 400, 'Referenced resource does not exist', 'INVALID_REFERENCE');
   }
-
-  // Handle API key errors
   if (err.message?.includes('API key') || err.message?.includes('Unauthorized')) {
-    return sendErrorResponse(
-      res,
-      'API configuration error',
-      503,
-      'Service temporarily unavailable due to configuration issues',
-      'API_KEY_ERROR'
-    );
+    return sendErrorResponse(res, 'API configuration error', 503, 'Service temporarily unavailable due to configuration issues', 'API_KEY_ERROR');
   }
-
-  // Log unexpected errors (unless in demo mode)
   if (!DEMO_MODE) {
     console.error('Unexpected error:', err);
   }
-
-  // Handle unexpected errors
   sendErrorResponse(
     res,
     'Internal server error',
@@ -267,7 +196,6 @@ export function globalErrorHandler(
   );
 }
 
-// Async route wrapper to catch errors
 export function asyncHandler(
   fn: (req: Request, res: Response, next: NextFunction) => Promise<any>
 ) {
@@ -276,14 +204,11 @@ export function asyncHandler(
   };
 }
 
-// Validation helper
 export function validateRequestBody(schema: any, data: any): { success: boolean; error?: string; data?: any } {
   try {
     const result = schema.safeParse(data);
     if (!result.success) {
-      const errorMessage = result.error.errors
-        .map((err: any) => `${err.path.join('.')}: ${err.message}`)
-        .join(', ');
+      const errorMessage = result.error.errors.map((err: any) => `${err.path.join('.')}: ${err.message}`).join(', ');
       return { success: false, error: `Validation failed: ${errorMessage}` };
     }
     return { success: true, data: result.data };
@@ -292,7 +217,6 @@ export function validateRequestBody(schema: any, data: any): { success: boolean;
   }
 }
 
-// Database operation wrapper
 export async function handleDatabaseOperation<T>(
   operation: () => Promise<T>,
   errorMessage: string = 'Database operation failed'
@@ -312,39 +236,15 @@ export async function handleDatabaseOperation<T>(
   }
 }
 
-// OpenAI API error helper
 export function handleOpenAIError(error: any): AppError {
   if (error?.status === 401) {
-    return new AppError(
-      'Invalid API key configuration',
-      503,
-      'OPENAI_AUTH_ERROR',
-      'Please check your OpenAI API key in settings'
-    );
+    return new AppError('Invalid API key configuration', 503, 'OPENAI_AUTH_ERROR', 'Please check your OpenAI API key in settings');
   }
-
   if (error?.status === 429) {
-    return new AppError(
-      'API rate limit exceeded',
-      429,
-      'OPENAI_RATE_LIMIT',
-      'Please try again later or check your OpenAI usage limits'
-    );
+    return new AppError('API rate limit exceeded', 429, 'OPENAI_RATE_LIMIT', 'Please try again later or check your OpenAI usage limits');
   }
-
   if (error?.status === 403) {
-    return new AppError(
-      'API access forbidden',
-      503,
-      'OPENAI_ACCESS_ERROR',
-      'Your API key does not have access to this service'
-    );
+    return new AppError('API access forbidden', 503, 'OPENAI_ACCESS_ERROR', 'Your API key does not have access to this service');
   }
-
-  return new AppError(
-    'AI service temporarily unavailable',
-    503,
-    'OPENAI_SERVICE_ERROR',
-    error?.message || 'Please try again later'
-  );
+  return new AppError('AI service temporarily unavailable', 503, 'OPENAI_SERVICE_ERROR', error?.message || 'Please try again later');
 }
