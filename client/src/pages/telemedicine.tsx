@@ -59,7 +59,7 @@ import { useLanguage } from "@/contexts/language-context";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Patient, Appointment } from "@shared/schema";
 import { useUploadManager } from "@/contexts/upload-manager";
-import { AlertCircle, Pill, Heart, Calendar, ClipboardList, Stethoscope } from "lucide-react";
+import { AlertCircle, Pill, Heart, ClipboardList, Stethoscope } from "lucide-react";
 
 // We'll use 'any' types for the Speech Recognition API to avoid TypeScript complexities
 // This is fine for our demonstration purposes

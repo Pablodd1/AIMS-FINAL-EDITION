@@ -20,7 +20,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'VITE_ENABLE_LOGIN_BYPASS=true npm run dev',
+    command: 'npx cross-env VITE_ENABLE_LOGIN_BYPASS=true npm run dev',
     url: 'http://localhost:5000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

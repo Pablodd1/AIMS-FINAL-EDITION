@@ -10,7 +10,7 @@ import { User } from "@shared/schema";
 
 const JWT_SECRET = process.env.SESSION_SECRET || process.env.JWT_SECRET || "aims-default-secret-change-in-production";
 
-function generateJwt(user: User): string {
+export function generateJwt(user: User): string {
   return jwt.sign(
     { id: user.id, username: user.username, role: user.role, name: user.name },
     JWT_SECRET,
@@ -47,7 +47,7 @@ export async function hashPassword(password: string) {
   return `${buf.toString("hex")}.${salt}`;
 }
 
-async function comparePasswords(supplied: string, stored: string): Promise<boolean> {
+export async function comparePasswords(supplied: string, stored: string): Promise<boolean> {
   try {
     if (!stored || !stored.includes('.')) {
       return false;
